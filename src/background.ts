@@ -1,3 +1,3 @@
 chrome.runtime.onInstalled.addListener(event => {
-    console.log('carregou')
+    console.log('Loaded extension')
 })
