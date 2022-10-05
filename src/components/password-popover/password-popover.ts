@@ -1,10 +1,12 @@
 import style from './password-popover.scss'
+import teste from './teste.scss'
 import html from './password-popover.html'
 
 const ManagerPopover = () => {
     class ManagerPopoverComponent extends HTMLElement {
         connectedCallback() {
-            this.style.cssText = style
+            console.log(style)
+            // this.style.cssText = style
             this.innerHTML = html
         }
     }

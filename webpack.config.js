@@ -1,5 +1,6 @@
 const path = require('path')
 const CopyPlugin = require('copy-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const RunChromeExtension = require('webpack-run-chrome-extension')
 
 module.exports = {
@@ -7,7 +8,6 @@ module.exports = {
    entry: {
       'background': path.resolve(__dirname, "src", "background.ts"),
       'manager': path.resolve(__dirname, "src", "manager.ts"),
-      'component-declaration': path.resolve(__dirname, "src", "components-declaration.ts"),
    },
    output: {
       path: path.join(__dirname, "dist"),
@@ -26,7 +26,7 @@ module.exports = {
    module: {
       rules: [
          {
-            test: /\.tsx?$/,
+            test: /\.ts$/,
             loader: "ts-loader",
             exclude: /node_modules/,
          },
@@ -40,12 +40,18 @@ module.exports = {
             }]
          },
          {
-            test: /\.sass$/,
+            test: /\.scss$/,
             use: [
-               {loader: 'style-loader'},
+               'style-loader',
+               {
+                  loader: MiniCssExtractPlugin.loader,
+                  /* options: {
+                     esModule: false,
+                  }, */
+               },
                {
                   loader: 'css-loader',
-                  options: {modules: true}
+                  // options: {modules: true}
                },
                {loader: 'sass-loader'}
             ]
@@ -63,6 +69,9 @@ module.exports = {
       }),
       new RunChromeExtension({ //? CHROME AUTOREFRESH PLUGIN
         extensionPath: path.resolve(__dirname, 'dist'),
-      })
+      }),
+      new MiniCssExtractPlugin({
+         filename: "main.css",
+       })
    ],
 };

@@ -6,10 +6,6 @@ const COMPONENTS = [
 ]
 
 const declareComponents = () => {
-    console.log('asdf')
-    console.log(window.customElements )
-
-
     COMPONENTS.forEach(component => {
         window.customElements.define(component.selector, component.component())
     })
