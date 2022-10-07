@@ -4,6 +4,6 @@ declare module '*.html' {
 }
 
 declare module '*.scss' {
-    const value: string
+    const value: {[key: string]: any}
     export default value
 }
