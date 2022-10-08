@@ -43,7 +43,7 @@ module.exports = {
                {loader: process.env.NODE_ENV == 'production' ? MiniCssExtractPlugin.loader : 'style-loader'},
                // 'style-loader', //? Injects css to DOM (seems not necessary)
                {loader: 'css-loader'}, //? Converts css to es modules
-               // {loader: 'sass-loader'} //? Transpiles sass to css
+               {loader: process.env.NODE_ENV != 'production' && 'sass-loader'} //? Transpiles sass to css
             ],
             exclude: /node_modules/,
          },
