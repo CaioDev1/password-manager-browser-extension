@@ -8,6 +8,10 @@ const ManagerPopover = () => {
 
             managerPopoverStyle.use({target: this})
         }
+
+        disconnectedCallback() {
+            managerPopoverStyle.unuse({target: this})
+        }
     }
 
     return ManagerPopoverComponent

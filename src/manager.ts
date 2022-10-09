@@ -4,6 +4,9 @@ import bootstrap from 'bootstrap'
 import mainStyle from './style.main.scss'
 
 class Manager {
+    popoverOpen: boolean = false
+    popoverShadow: ShadowRoot
+    
     constructor() {
         this.mapAllInputFields()
     }
@@ -13,46 +16,61 @@ class Manager {
     
         inputs.forEach(passwordInput => {
             passwordInput.onfocus = event => {
-                this.insertManagerMenu(passwordInput)  
+                event.stopPropagation()
+
+                !this.popoverOpen && this.insertManagerMenu(passwordInput)  
             }
         })
     }
     
-    insertManagerMenu(oldPasswordInput: HTMLInputElement) {
-        const currentInputCloneEl = oldPasswordInput.cloneNode(true)
-    
-        const inputWrapper = document.createElement('div')
-        inputWrapper.setAttribute('inputPopover', '')
-        
-        inputWrapper.style.position = 'relative'
-        inputWrapper.style.width = 'fit-content'
-    
-        inputWrapper.appendChild(currentInputCloneEl)
-        
-        const managerPopover =  document.createElement('manager-popover')
-        
+    insertManagerMenu(passwordInput: HTMLInputElement) {
         const popoverHost = document.createElement('div')
-        popoverHost.classList.add('popover-host')
+        popoverHost.id = 'popover-host'
 
-        const shadow = popoverHost.attachShadow({mode: 'open'})
+        this.popoverShadow = popoverHost.attachShadow({mode: 'open'})
 
-        shadow.appendChild(managerPopover)
+        bootstrap.use({target: this.popoverShadow})
+        mainStyle.use({target: this.popoverShadow})
 
-        bootstrap.use({target: shadow})
-        mainStyle.use({target: shadow})
+        const managerPopover = document.createElement('manager-popover')
 
-        inputWrapper.appendChild(popoverHost)
-    
-        oldPasswordInput.after(inputWrapper)
-        oldPasswordInput.remove()
+        const inputPosition = this.getInputPosition(passwordInput)
+        const inputWidth = passwordInput.offsetWidth
 
-        currentInputCloneEl.addEventListener('focusout', event => {
-            this.removeManagerMenu(currentInputCloneEl)
-        }, {once: true})
+        managerPopover.style.position = 'absolute'
+        managerPopover.style.transform = `translate3d(${inputPosition.left + (inputWidth - 30)}px, ${inputPosition.top}px, 0px)`
+
+        this.popoverShadow.appendChild(managerPopover)
+
+        this.popoverOpen = true
+
+        document.onmousedown = this.removeManagerMenu.bind(this)
+
+        document.body.appendChild(popoverHost)
     }
 
-    removeManagerMenu(passwordInput: HTMLInputElement | Node) {
-        passwordInput.parentElement?.querySelector('manager-popover')?.remove()
+    getInputPosition(input: HTMLInputElement) {
+        const rect = input.getBoundingClientRect()
+
+        return {
+          left: rect.left + window.scrollX,
+          top: rect.top + window.scrollY
+        }
+      }
+
+    removeManagerMenu(event: MouseEvent) {
+        const isPopoverHostEl = (event.target as HTMLElement).id == 'popover-host'
+        
+        if(this.popoverOpen && !isPopoverHostEl) {
+            document.body.querySelector('#popover-host')?.remove()
+    
+            bootstrap.unuse({target: this.popoverShadow})
+            mainStyle.unuse({target: this.popoverShadow})
+    
+            document.removeEventListener('mousedown', this.removeManagerMenu)
+    
+            this.popoverOpen = false
+        }
     }
 }
 

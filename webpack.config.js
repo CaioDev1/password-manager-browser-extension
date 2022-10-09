@@ -1,24 +1,27 @@
 const path = require('path')
 const CopyPlugin = require('copy-webpack-plugin')
-const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const RunChromeExtension = require('webpack-run-chrome-extension')
+const TerserPlugin = require('terser-webpack-plugin');
 
-module.exports = {
-   mode: process.env.NODE_ENV,
+const ENV = process.env.NODE_ENV
+
+const CONFIG = {
+   mode: ENV,
    entry: {
       'background': path.resolve(__dirname, "src", "background.ts"),
       'manager': path.resolve(__dirname, "src", "manager.ts"),
+      'bootstrap.min': path.resolve(__dirname, "public", "styles.bootstrap.css"),
    },
    output: {
       path: path.join(__dirname, "dist"),
       filename: "[name].js",
+      publicPath: '',
       clean: true
    },
    resolve: {
       extensions: [".ts", ".js"],
       alias: {
-         '@webcomponents/custom-elements': path.resolve(__dirname, 'dist', 'extension-dependencies', 'custom-elements'),
-         'bootstrap': path.resolve(__dirname, 'dist', 'extension-dependencies', 'bootstrap', 'styles.bootstrap.css'), //'bootstrap/dist/css/styles.bootstrap.css'
+         'bootstrap': path.resolve(__dirname, 'public', 'styles.bootstrap.css'),
       }
    },
    module: {
@@ -37,16 +40,6 @@ module.exports = {
                }
             }]
          },
-  /*        {
-            test: /\.main\.scss$/,
-            use: [
-               {loader: process.env.NODE_ENV == 'production' ? MiniCssExtractPlugin.loader : 'style-loader'}, //? Injects css to DOM (seems not necessary)
-               {loader: 'css-loader'}, //? Converts css to es modules
-               {loader: process.env.NODE_ENV != 'production' && 'sass-loader'} //? Transpiles sass to css
-            ],
-            exclude: /node_modules/,
-            // type: 'asset/source',
-         }, */
          {
             test: /\.(component|main|bootstrap)\.(scss|css)$/,
             use: [
@@ -55,17 +48,24 @@ module.exports = {
                   options: {
                      injectType: 'lazyStyleTag',
                      insert: (element, options) => {
-                        var parent = options.target || document.head;
-        
-                        parent.appendChild(element);
+                        var parent = options.target /* || document.head */
+
+                        parent.appendChild(element)
                       }
                   }
                },
                {loader: 'css-loader'}, //? Converts css to es modules
-               {loader: process.env.NODE_ENV != 'production' && 'sass-loader'} //? Transpiles sass to css
+               {loader: 'sass-loader'} //? Transpiles sass to css
             ],
             exclude: /node_modules/,
          },
+         {
+            test: /\.(jpe?g|png|gif|svg)$/,
+            type: 'asset/resource',
+            generator: {
+               filename: 'assets/img/[name][ext]'
+            },
+          }
          /* {
             test: /\.css$/,
             exclude: /node_modules/,
@@ -78,18 +78,22 @@ module.exports = {
    plugins: [
       new CopyPlugin({
          patterns: [
-            // {from: ".", to: ".", globOptions: {absolute: true}, context: "public"},
             {from: path.resolve(__dirname, 'public', 'manifest.json'), to: '.'},
-            {from: path.resolve(__dirname, 'public', 'styles.bootstrap.css'), to: "./extension-dependencies/bootstrap"},
-            {from: path.resolve(__dirname, 'node_modules/@webcomponents/'), to: './extension-dependencies'}
+            // {from: path.resolve(__dirname, 'public', 'assets'), to: "./assets"},
          ]
       }),
       new RunChromeExtension({ //? CHROME AUTOREFRESH PLUGIN
         extensionPath: path.resolve(__dirname, 'dist'),
         startingUrl: 'http://127.0.0.1:5500/index.html'
-      }),
-      new MiniCssExtractPlugin({
-         filename: "main.css",
-       })
+      })
    ],
-};
+}
+
+if(ENV == 'production') {
+   CONFIG.optimization = {
+      minimize: true,
+      minimizer: [new TerserPlugin()],
+   }
+}
+
+module.exports = CONFIG

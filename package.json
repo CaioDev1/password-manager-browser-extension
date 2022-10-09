@@ -2,17 +2,10 @@
   "name": "password-manager-browser-extension",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "NODE_ENV=production webpack --config webpack.config.js",
-    "dev-build": "NODE_ENV=development webpack --config webpack.config.js",
-    "dev": "nodemon --watch ./ --exec 'node ./node_modules/.bin/webpack'"
-  },
-  "nodemonConfig": {
-    "ignore": [
-      "./dist/**"
-    ]
+    "dev": "NODE_ENV=development webpack --config webpack.config.js"
   },
   "keywords": [],
   "author": "",
@@ -22,10 +15,10 @@
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.1",
     "html-loader": "^4.2.0",
-    "mini-css-extract-plugin": "^2.6.1",
     "sass": "^1.55.0",
     "sass-loader": "^13.0.2",
     "style-loader": "^3.3.1",
+    "terser-webpack-plugin": "^5.3.6",
     "ts-loader": "^9.4.1",
     "typescript": "^4.8.4",
     "webpack": "^5.74.0",
