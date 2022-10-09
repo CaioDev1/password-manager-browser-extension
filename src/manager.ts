@@ -1,6 +1,7 @@
 import declareComponents from "./components-declaration"
 
-import 'bootstrap'
+import bootstrap from 'bootstrap'
+import mainStyle from './style.main.scss'
 
 class Manager {
     constructor() {
@@ -28,12 +29,21 @@ class Manager {
     
         inputWrapper.appendChild(currentInputCloneEl)
         
-        const managerPopover = document.createElement('manager-popover')
-    
-        inputWrapper.appendChild(managerPopover)
+        const managerPopover =  document.createElement('manager-popover')
+        
+        const popoverHost = document.createElement('div')
+        popoverHost.classList.add('popover-host')
+
+        const shadow = popoverHost.attachShadow({mode: 'open'})
+
+        shadow.appendChild(managerPopover)
+
+        bootstrap.use({target: shadow})
+        mainStyle.use({target: shadow})
+
+        inputWrapper.appendChild(popoverHost)
     
         oldPasswordInput.after(inputWrapper)
-    
         oldPasswordInput.remove()
 
         currentInputCloneEl.addEventListener('focusout', event => {

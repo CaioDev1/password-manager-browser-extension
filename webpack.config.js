@@ -18,7 +18,7 @@ module.exports = {
       extensions: [".ts", ".js"],
       alias: {
          '@webcomponents/custom-elements': path.resolve(__dirname, 'dist', 'extension-dependencies', 'custom-elements'),
-         'bootstrap': path.resolve(__dirname, 'dist', 'extension-dependencies', 'bootstrap', 'bootstrap.min.css'), //'bootstrap/dist/css/bootstrap.min.css'
+         'bootstrap': path.resolve(__dirname, 'dist', 'extension-dependencies', 'bootstrap', 'styles.bootstrap.css'), //'bootstrap/dist/css/styles.bootstrap.css'
       }
    },
    module: {
@@ -37,24 +37,40 @@ module.exports = {
                }
             }]
          },
-         {
-            test: /\.scss$/,
+  /*        {
+            test: /\.main\.scss$/,
             use: [
-               {loader: process.env.NODE_ENV == 'production' ? MiniCssExtractPlugin.loader : 'style-loader'},
-               // 'style-loader', //? Injects css to DOM (seems not necessary)
+               {loader: process.env.NODE_ENV == 'production' ? MiniCssExtractPlugin.loader : 'style-loader'}, //? Injects css to DOM (seems not necessary)
+               {loader: 'css-loader'}, //? Converts css to es modules
+               {loader: process.env.NODE_ENV != 'production' && 'sass-loader'} //? Transpiles sass to css
+            ],
+            exclude: /node_modules/,
+            // type: 'asset/source',
+         }, */
+         {
+            test: /\.(component|main|bootstrap)\.(scss|css)$/,
+            use: [
+               {
+                  loader: 'style-loader',
+                  options: {
+                     injectType: 'lazyStyleTag',
+                     insert: (element, options) => {
+                        var parent = options.target || document.head;
+        
+                        parent.appendChild(element);
+                      }
+                  }
+               },
                {loader: 'css-loader'}, //? Converts css to es modules
                {loader: process.env.NODE_ENV != 'production' && 'sass-loader'} //? Transpiles sass to css
             ],
             exclude: /node_modules/,
          },
-         {
+         /* {
             test: /\.css$/,
-            use: [
-               {loader: process.env.NODE_ENV == 'production' ? MiniCssExtractPlugin.loader : 'style-loader'},
-               {loader: "css-loader"},
-            ],
             exclude: /node_modules/,
-         },
+            type: 'asset/source'
+         }, */
       ],
    },
    watch: true, //? MANDATORY FOR CHROME AUTO REFRSH PLUGIN TO WORK
@@ -64,7 +80,7 @@ module.exports = {
          patterns: [
             // {from: ".", to: ".", globOptions: {absolute: true}, context: "public"},
             {from: path.resolve(__dirname, 'public', 'manifest.json'), to: '.'},
-            {from: path.resolve(__dirname, 'public', 'bootstrap.min.css'), to: "./extension-dependencies/bootstrap"},
+            {from: path.resolve(__dirname, 'public', 'styles.bootstrap.css'), to: "./extension-dependencies/bootstrap"},
             {from: path.resolve(__dirname, 'node_modules/@webcomponents/'), to: './extension-dependencies'}
          ]
       }),
