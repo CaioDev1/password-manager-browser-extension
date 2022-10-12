@@ -6,6 +6,8 @@ import mainStyle from './style.main.scss'
 class Manager {
     popoverOpen: boolean = false
     popoverShadow: ShadowRoot
+
+    windowResizeEvent: (params: UIEvent) => void
     
     constructor() {
         this.mapAllInputFields()
@@ -34,12 +36,6 @@ class Manager {
 
         const managerPopover = document.createElement('manager-popover')
 
-        const inputPosition = this.getInputPosition(passwordInput)
-        const inputWidth = passwordInput.offsetWidth
-
-        managerPopover.style.position = 'absolute'
-        managerPopover.style.transform = `translate3d(${inputPosition.left + (inputWidth - 30)}px, ${inputPosition.top}px, 0px)`
-
         this.popoverShadow.appendChild(managerPopover)
 
         this.popoverOpen = true
@@ -47,14 +43,41 @@ class Manager {
         document.onmousedown = this.removeManagerMenu.bind(this)
 
         document.body.appendChild(popoverHost)
+
+        this.applyPopoverPosition(passwordInput)
+
+        this.windowResizeEvent = event => {
+            this.applyPopoverPosition(passwordInput)
+        }
+
+        window.onresize = this.windowResizeEvent
+    }
+
+    applyPopoverPosition(input: HTMLInputElement) {
+        const inputPosition = this.getInputPosition(input)
+        const inputWidth = input.offsetWidth
+
+        const currentManagerPopoverEl = this.popoverShadow.querySelector('manager-popover') as HTMLElement
+
+        let popoverLeftPosition = inputPosition.left + (inputWidth - 30)
+        let popoverRightPosition = popoverLeftPosition + currentManagerPopoverEl?.offsetWidth
+
+        const popoverXAxisOverflow = popoverRightPosition >= window.innerWidth
+        const popoverXAxisPositionGap = 30
+
+        if(popoverXAxisOverflow)
+            popoverLeftPosition -= Math.abs(popoverRightPosition - window.innerWidth) + popoverXAxisPositionGap
+
+        currentManagerPopoverEl.style.transform = `translate3d(${popoverLeftPosition}px, ${inputPosition.top + input.offsetHeight}px, 0px)`
     }
 
     getInputPosition(input: HTMLInputElement) {
         const rect = input.getBoundingClientRect()
 
         return {
-          left: rect.left + window.scrollX,
-          top: rect.top + window.scrollY
+          left: rect.left,
+          top: rect.top + window.scrollY,
+          right: rect.right
         }
       }
 
@@ -68,6 +91,8 @@ class Manager {
             mainStyle.unuse({target: this.popoverShadow})
     
             document.removeEventListener('mousedown', this.removeManagerMenu)
+
+            window.removeEventListener('resize', this.windowResizeEvent)
     
             this.popoverOpen = false
         }

@@ -10,12 +10,13 @@ const CONFIG = {
    entry: {
       'background': path.resolve(__dirname, "src", "background.ts"),
       'manager': path.resolve(__dirname, "src", "manager.ts"),
-      'bootstrap.min': path.resolve(__dirname, "public", "styles.bootstrap.css"),
+      // 'bootstrap.min': path.resolve(__dirname, "public", "styles.bootstrap.css"),
    },
    output: {
       path: path.join(__dirname, "dist"),
       filename: "[name].js",
       publicPath: '',
+      assetModuleFilename: 'assets/img/[name][ext]',
       clean: true
    },
    resolve: {
@@ -60,17 +61,9 @@ const CONFIG = {
             exclude: /node_modules/,
          },
          {
-            test: /\.(jpe?g|png|gif|svg)$/,
+            test: /\.(jpe?g|png|gif|svg|jpg)$/,
             type: 'asset/resource',
-            generator: {
-               filename: 'assets/img/[name][ext]'
-            },
           }
-         /* {
-            test: /\.css$/,
-            exclude: /node_modules/,
-            type: 'asset/source'
-         }, */
       ],
    },
    watch: true, //? MANDATORY FOR CHROME AUTO REFRSH PLUGIN TO WORK
