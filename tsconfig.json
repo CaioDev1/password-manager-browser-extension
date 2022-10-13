@@ -11,5 +11,6 @@
      "strictPropertyInitialization": false,
      "typeRoots": [ "node_modules/@types"]
   },
-  "include": ["src", "typings.d.ts"]
+  "include": ["src", "typings.d.ts"],
+  "exclude": ["interfaces"]
 }
