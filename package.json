@@ -4,8 +4,8 @@
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "NODE_ENV=production webpack --config webpack.config.js",
-    "dev": "NODE_ENV=development webpack --config webpack.config.js"
+    "build": "set NODE_ENV=production&&webpack --config webpack.config.js",
+    "dev": "set NODE_ENV=development&&webpack --config webpack.config.js"
   },
   "keywords": [],
   "author": "",

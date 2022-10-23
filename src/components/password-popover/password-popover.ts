@@ -31,9 +31,15 @@ const ManagerPopover = (dependencies: IComponentDependencies) => {
             dependencies.root.querySelectorAll<HTMLButtonElement>('.tab-button')
                 .forEach(button => {
                     button.addEventListener('click', e => {
-                        const tabId = button.dataset.tabId
-
+                        type TabIds = 'my_passwords_tab' | 'creation_tab'
                         
+                        const tabId: TabIds = button.dataset.tabId as TabIds
+
+                        if(tabId == 'creation_tab') {
+                            const creationTemplate = document.querySelector('#creation-template') as HTMLElement
+
+                            document.querySelector('#current-tab')?.appendChild(creationTemplate)
+                        }                    
                     })
                 })
         }
