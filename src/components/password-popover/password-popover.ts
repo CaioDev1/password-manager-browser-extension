@@ -5,25 +5,48 @@ import html from './password-popover.html'
 
 type TabIds = 'my_passwords_tab' | 'creation_tab'
 
-const ManagerPopover = (dependencies: IComponentDependencies) => {
-    class ManagerPopoverComponent extends HTMLElement {
+export const ManagerPopoverComponent = (dependencies: IComponentDependencies) => {
+    class ManagerPopover extends HTMLElement {
         currentTabId: TabIds = 'creation_tab'
 
         passwordParams: {length: number} = {length: 12}
+
+        passwordInput: HTMLInputElement
+
+        currentPassword: string
 
         connectedCallback() {
             this.innerHTML = html
 
             managerPopoverStyle.use({target: this})
 
+            
             this.initCurrentTab()
             this.changeTabListener()
+            
+            this.disableGeneratePasswordButton(true)
 
             this.initCreationTabListeners()
+
+            this.generatePassword()
+            this.applyPasswordListener()
         }
 
         disconnectedCallback() {
             managerPopoverStyle.unuse({target: this})
+        }
+
+        connectPasswordInput(input: HTMLInputElement) {
+            this.passwordInput = input
+            
+            this.disableGeneratePasswordButton(false)
+        }
+
+        disableGeneratePasswordButton(disabled: boolean) {
+            console.log(dependencies.root)
+            const generatePasswordButton = this.querySelector('#creation-container') as HTMLButtonElement
+            console.log(generatePasswordButton)
+            generatePasswordButton.disabled = disabled
         }
 
         initCurrentTab() {
@@ -88,26 +111,38 @@ const ManagerPopover = (dependencies: IComponentDependencies) => {
         }
 
         generatePasswordListener() {
-            const actionButton = dependencies.root.querySelector('#generate-password-button') as HTMLButtonElement
+            const reloadButton = dependencies.root.querySelector('.reload-password-button') as HTMLButtonElement
+
+            reloadButton.onclick = event => {
+                this.generatePassword()
+            }
+        }
+
+        generatePassword() {
             const passwordResultLabel = dependencies.root.querySelector('#password-result') as HTMLLabelElement
 
-            actionButton.onclick = event => {
-                const newPassword = new PasswordGeneratorService().generatePassword({
-                    length: this.passwordParams.length
-                })
+            const newPassword = new PasswordGeneratorService().generatePassword({
+                length: this.passwordParams.length
+            })
 
-                passwordResultLabel.textContent = newPassword
+            this.currentPassword = newPassword
+            passwordResultLabel.textContent = newPassword
+        }
 
-                
+        applyPasswordListener() {
+            const generatePasswordButton = dependencies.root.querySelector('#generate-password-button') as HTMLButtonElement
+
+            generatePasswordButton.onclick = event => {
+                console.log(this.passwordInput)
+                if(this.passwordInput) {
+                    this.passwordInput.value = this.currentPassword
+                }
             }
         }
     }
 
-
-    return ManagerPopoverComponent
-}
-
-export = {
-    component: ManagerPopover,
-    selector: 'manager-popover'
+    return {
+        component: ManagerPopover,
+        COMPONENT_SELECTOR: 'manager-popover'
+    }
 }

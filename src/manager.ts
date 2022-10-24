@@ -2,6 +2,7 @@ import declareComponents from "./components-declaration"
 
 import bootstrap from 'bootstrap'
 import mainStyle from './style.main.scss'
+import { IComponentDependencies } from "./interfaces/main-interface"
 
 class Manager {
     popoverOpen: boolean = false
@@ -40,8 +41,10 @@ class Manager {
         mainStyle.use({target: this.popoverShadow})
 
         const managerPopover = document.createElement('manager-popover')
+ 
+        this.popoverShadow.appendChild(managerPopover);
 
-        this.popoverShadow.appendChild(managerPopover)
+        // (managerPopover as any).connectPasswordInput(passwordInput)
 
         this.popoverOpen = true
 
@@ -107,8 +110,8 @@ class Manager {
 
 const manager = new Manager()
 
-const DEPENDENCES = {
+const DEPENDENCIES: IComponentDependencies = {
     root: manager.popoverShadow
 }
 
-declareComponents(DEPENDENCES)
+declareComponents(DEPENDENCIES)
