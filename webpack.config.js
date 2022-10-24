@@ -23,7 +23,7 @@ const CONFIG = {
       extensions: [".ts", ".js"],
       alias: {
          'bootstrap': path.resolve(__dirname, 'public', 'styles.bootstrap.css'),
-      }
+      },
    },
    module: {
       rules: [

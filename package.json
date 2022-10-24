@@ -4,14 +4,15 @@
   "description": "",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "set NODE_ENV=production&&webpack --config webpack.config.js",
-    "dev": "set NODE_ENV=development&&webpack --config webpack.config.js"
+    "build": "NODE_ENV=production webpack --config webpack.config.js",
+    "dev": "NODE_ENV=development webpack --config webpack.config.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/chrome": "0.0.197",
+    "@types/node": "^18.11.4",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.1",
     "html-loader": "^4.2.0",
@@ -26,6 +27,7 @@
     "webpack-run-chrome-extension": "^0.6.0"
   },
   "dependencies": {
-    "@webcomponents/custom-elements": "^1.5.0"
+    "@webcomponents/custom-elements": "^1.5.0",
+    "generate-password-browser": "^1.1.0"
   }
 }
