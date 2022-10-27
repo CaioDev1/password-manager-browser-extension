@@ -5,22 +5,27 @@ import html from './password-popover.html'
 
 type TabIds = 'my_passwords_tab' | 'creation_tab'
 
-export const ManagerPopoverComponent = (dependencies: IComponentDependencies) => {
-    class ManagerPopover extends HTMLElement {
-        currentTabId: TabIds = 'creation_tab'
+//! TO FIX
+//? On tab changes, the creation tab removes all listeners and label values
+    //* Implement a template render to pass all component value on tab show?
 
-        passwordParams: {length: number} = {length: 12}
+export const ManagerPopoverComponent = ({root}: IComponentDependencies) => {
+    class ManagerPopover extends HTMLElement {
+        private currentTabId: TabIds = 'creation_tab'
+
+        private passwordParams: {length: number} = {length: 12}
 
         passwordInput: HTMLInputElement
 
-        currentPassword: string
+        private currentPassword: string
+
+        private componentConnectedEvent: Event = new Event('componentConnected')
 
         connectedCallback() {
             this.innerHTML = html
 
             managerPopoverStyle.use({target: this})
 
-            
             this.initCurrentTab()
             this.changeTabListener()
             
@@ -30,38 +35,53 @@ export const ManagerPopoverComponent = (dependencies: IComponentDependencies) =>
 
             this.generatePassword()
             this.applyPasswordListener()
+
+            this.dispatchEvent(this.componentConnectedEvent)
+        }
+
+        connectPasswordInput(input: HTMLInputElement) {
+            this.passwordInput = input
+
+            this.addEventListener('componentConnected', () => {
+                if(this.passwordInput instanceof HTMLInputElement) {
+                    this.disableGeneratePasswordButton(false)
+                }
+            })
         }
 
         disconnectedCallback() {
             managerPopoverStyle.unuse({target: this})
         }
 
-        connectPasswordInput(input: HTMLInputElement) {
-            this.passwordInput = input
-            
-            this.disableGeneratePasswordButton(false)
+        private get creationTab() {
+            return (this.querySelector('#creation-template') as HTMLTemplateElement).content
         }
 
-        disableGeneratePasswordButton(disabled: boolean) {
-            console.log(dependencies.root)
-            const generatePasswordButton = this.querySelector('#creation-container') as HTMLButtonElement
-            console.log(generatePasswordButton)
+        private get myPasswordsTab() {
+            return (this.querySelector('#my-passwords-template') as HTMLTemplateElement).content
+        }
+
+       private  disableGeneratePasswordButton(disabled: boolean) {
+            const generatePasswordButton = this.creationTab.querySelector('#generate-password-button') as HTMLButtonElement
+            
             generatePasswordButton.disabled = disabled
         }
 
-        initCurrentTab() {
-            const currentTabTemplate = dependencies.root.querySelector(this.currentTabId == 'creation_tab' ? '#creation-template' : '#teste') as HTMLTemplateElement
+        private initCurrentTab() {
+            const currentTabTemplate = this.currentTabId == 'creation_tab' 
+                ? this.creationTab 
+                : this.myPasswordsTab
 
             if(!currentTabTemplate) throw new Error('Current template not found')
 
-            const currentTabEl = currentTabTemplate.content.cloneNode(true) as HTMLElement
+            const currentTabEl = currentTabTemplate.cloneNode(true) as HTMLElement
 
-            dependencies.root.querySelector('#current-tab')?.appendChild(currentTabEl)
+            this.querySelector('#current-tab')?.appendChild(currentTabEl)
         }
         
-        initPasswordLengthChangeHandler() {
-            const rangeInput = dependencies.root.querySelector('#password-length') as HTMLInputElement
-            const rangeLabel = dependencies.root.querySelector('#password-length-label') as HTMLSpanElement
+        private initPasswordLengthChangeHandler() {
+            const rangeInput = this.querySelector('#password-length') as HTMLInputElement
+            const rangeLabel = this.querySelector('#password-length-label') as HTMLSpanElement
 
             rangeLabel.textContent = this.passwordParams.length.toString()
 
@@ -74,20 +94,17 @@ export const ManagerPopoverComponent = (dependencies: IComponentDependencies) =>
             }
         }
 
-        initCreationTabListeners() {
+        private initCreationTabListeners() {
             this.initPasswordLengthChangeHandler()
             this.generatePasswordListener()
         }
 
-        changeTabListener() {
-            const tabContent = dependencies.root.querySelector('#current-tab') as HTMLElement
+        private changeTabListener() {
+            const tabContent = this.querySelector('#current-tab') as HTMLElement
 
             if(!tabContent) throw new Error('Current tab wrapper not found')
 
-            const creationTabTemplate = dependencies.root.querySelector('#creation-template') as HTMLTemplateElement
-            const passwordsListTabTemplate = dependencies.root.querySelector('#my-passwords-template') as HTMLTemplateElement
-
-            dependencies.root.querySelectorAll<HTMLButtonElement>('.tab-button')
+            this.querySelectorAll<HTMLButtonElement>('.tab-button')
                 .forEach(button => {
                     button.addEventListener('click', e => {                        
                         const tabId: TabIds = button.dataset.tabid as TabIds
@@ -95,14 +112,11 @@ export const ManagerPopoverComponent = (dependencies: IComponentDependencies) =>
                         tabContent.innerHTML = ''
 
                         if(tabId == 'creation_tab') {
-                            tabContent?.appendChild(creationTabTemplate.content.cloneNode(true))
+                            tabContent?.appendChild(this.creationTab.cloneNode(true))
 
                             this.initCreationTabListeners()
                         } else {
-                            const testDiv = document.createElement('div')
-                            testDiv.innerHTML = 'test'
-
-                            tabContent?.appendChild(testDiv)
+                            tabContent?.appendChild(this.myPasswordsTab.cloneNode(true))
                         }        
 
                         this.currentTabId = tabId
@@ -110,16 +124,16 @@ export const ManagerPopoverComponent = (dependencies: IComponentDependencies) =>
                 })
         }
 
-        generatePasswordListener() {
-            const reloadButton = dependencies.root.querySelector('.reload-password-button') as HTMLButtonElement
+        private generatePasswordListener() {
+            const reloadButton = this.querySelector('.reload-password-button') as HTMLButtonElement
 
             reloadButton.onclick = event => {
                 this.generatePassword()
             }
         }
 
-        generatePassword() {
-            const passwordResultLabel = dependencies.root.querySelector('#password-result') as HTMLLabelElement
+        private generatePassword() {
+            const passwordResultLabel = this.querySelector('#password-result') as HTMLLabelElement
 
             const newPassword = new PasswordGeneratorService().generatePassword({
                 length: this.passwordParams.length
@@ -129,11 +143,10 @@ export const ManagerPopoverComponent = (dependencies: IComponentDependencies) =>
             passwordResultLabel.textContent = newPassword
         }
 
-        applyPasswordListener() {
-            const generatePasswordButton = dependencies.root.querySelector('#generate-password-button') as HTMLButtonElement
+        private applyPasswordListener() {
+            const generatePasswordButton = this.querySelector('#generate-password-button') as HTMLButtonElement
 
             generatePasswordButton.onclick = event => {
-                console.log(this.passwordInput)
                 if(this.passwordInput) {
                     this.passwordInput.value = this.currentPassword
                 }

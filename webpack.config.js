@@ -66,8 +66,6 @@ const CONFIG = {
           }
       ],
    },
-   watch: true, //? MANDATORY FOR CHROME AUTO REFRSH PLUGIN TO WORK
-   devtool: 'cheap-module-source-map', //? AVOIDS EXTENSIONS ERRORS CAUSED BY WEBPACK EVAL()
    plugins: [
       new CopyPlugin({
          patterns: [
@@ -87,6 +85,9 @@ if(ENV == 'production') {
       minimize: true,
       minimizer: [new TerserPlugin()],
    }
+} else {
+   CONFIG.watch = true //? MANDATORY FOR CHROME AUTO REFRSH PLUGIN TO WORK
+   CONFIG.devtool = 'cheap-module-source-map' //? AVOIDS EXTENSIONS ERRORS CAUSED BY WEBPACK EVAL()
 }
 
 module.exports = CONFIG
