@@ -1,3 +1,7 @@
+:host {
+    all: initial; //? PREVENTS WEBSITE CSS OVERWRITE COMPONENT STYLISH
+}
+
 * {
     padding: 0;
     margin: 0;
@@ -12,4 +16,6 @@ manager-popover {
     position: absolute;
     top: 0;
     left: 0;
+
+    font-size: 13px;
 }

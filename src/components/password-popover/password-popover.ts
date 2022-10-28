@@ -1,5 +1,5 @@
 import { IComponentDependencies } from '../../interfaces/main-interface'
-import PasswordGeneratorService from '../../services/password-generator-service'
+import PasswordGeneratorService, { IPasswordGeneratorParams } from '../../services/password-generator-service'
 import managerPopoverStyle from './password-popover.component.scss'
 import html from './password-popover.html'
 
@@ -13,7 +13,15 @@ export const ManagerPopoverComponent = ({root}: IComponentDependencies) => {
     class ManagerPopover extends HTMLElement {
         private currentTabId: TabIds = 'creation_tab'
 
-        private passwordParams: {length: number} = {length: 12}
+        private passwordParams: IPasswordGeneratorParams = {
+            length: 12,
+            easyRead: false,
+            easySpeak: false,
+            uppercase: true,
+            lowercase: true,
+            numbers: false,
+            symbols: false,
+        }
 
         passwordInput: HTMLInputElement
 
@@ -35,6 +43,7 @@ export const ManagerPopoverComponent = ({root}: IComponentDependencies) => {
 
             this.generatePassword()
             this.applyPasswordListener()
+            this.initPasswordConfigOptionListeners()
 
             this.dispatchEvent(this.componentConnectedEvent)
         }
@@ -53,18 +62,20 @@ export const ManagerPopoverComponent = ({root}: IComponentDependencies) => {
             managerPopoverStyle.unuse({target: this})
         }
 
-        private get creationTab() {
-            return (this.querySelector('#creation-template') as HTMLTemplateElement).content
-        }
+        private get creationTab() {return (this.querySelector('#creation-template') as HTMLTemplateElement).content}
+        private get myPasswordsTab() {return (this.querySelector('#my-passwords-template') as HTMLTemplateElement).content}
+       
+        private get generatePasswordButton() {return this.querySelector('#generate-password-button') as HTMLButtonElement}
 
-        private get myPasswordsTab() {
-            return (this.querySelector('#my-passwords-template') as HTMLTemplateElement).content
-        }
+        private get easyReadOption() {return this.querySelector('#easy-read-option') as HTMLInputElement}
+        private get easySpeakOption() {return this.querySelector('#easy-speak-option') as HTMLInputElement}
+        private get uppercaseOption() {return this.querySelector('#uppercase-option') as HTMLInputElement} 
+        private get lowercaseOption() {return this.querySelector('#lowercase-option') as HTMLInputElement} 
+        private get numbersOption() {return this.querySelector('#numbers-option') as HTMLInputElement} 
+        private get symbolsOption() {return this.querySelector('#symbols-option') as HTMLInputElement} 
 
-       private  disableGeneratePasswordButton(disabled: boolean) {
-            const generatePasswordButton = this.creationTab.querySelector('#generate-password-button') as HTMLButtonElement
-            
-            generatePasswordButton.disabled = disabled
+        private disableGeneratePasswordButton(disabled: boolean) {  
+            this.generatePasswordButton.disabled = disabled
         }
 
         private initCurrentTab() {
@@ -97,6 +108,27 @@ export const ManagerPopoverComponent = ({root}: IComponentDependencies) => {
         private initCreationTabListeners() {
             this.initPasswordLengthChangeHandler()
             this.generatePasswordListener()
+        }
+
+        private initPasswordConfigOptionListeners() {
+            type checkboxOptions = 'easyRead' | 'easySpeak' | 'uppercase' | 'lowercase' | 'numbers' | 'symbols'
+
+            const options: {paramName: checkboxOptions, optionEl: HTMLInputElement}[] = [
+                {paramName: 'easyRead', optionEl: this.easyReadOption},
+                {paramName: 'easySpeak', optionEl: this.easySpeakOption},
+                {paramName: 'uppercase', optionEl: this.uppercaseOption},
+                {paramName: 'lowercase', optionEl: this.lowercaseOption},
+                {paramName: 'numbers', optionEl: this.numbersOption},
+                {paramName: 'symbols', optionEl: this.symbolsOption},
+            ]
+
+            options.forEach(option => {
+                option.optionEl.addEventListener('change', e => {
+                    const changedOption = e.currentTarget as HTMLInputElement
+
+                    this.passwordParams[option.paramName] = changedOption.checked
+                })
+            })
         }
 
         private changeTabListener() {
@@ -135,18 +167,14 @@ export const ManagerPopoverComponent = ({root}: IComponentDependencies) => {
         private generatePassword() {
             const passwordResultLabel = this.querySelector('#password-result') as HTMLLabelElement
 
-            const newPassword = new PasswordGeneratorService().generatePassword({
-                length: this.passwordParams.length
-            })
+            const newPassword = new PasswordGeneratorService().generatePassword(this.passwordParams)
 
             this.currentPassword = newPassword
             passwordResultLabel.textContent = newPassword
         }
 
         private applyPasswordListener() {
-            const generatePasswordButton = this.querySelector('#generate-password-button') as HTMLButtonElement
-
-            generatePasswordButton.onclick = event => {
+            this.generatePasswordButton.onclick = event => {
                 if(this.passwordInput) {
                     this.passwordInput.value = this.currentPassword
                 }

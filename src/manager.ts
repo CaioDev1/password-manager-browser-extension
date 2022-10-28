@@ -12,6 +12,8 @@ class Manager {
     popoverHost: HTMLDivElement
     currentManagerPopover: HTMLElement
 
+    currentPasswordInput: HTMLInputElement
+
     windowResizeEvent: (params: UIEvent) => void
     
     constructor() {
@@ -33,18 +35,20 @@ class Manager {
             passwordInput.onfocus = event => {
                 event.stopPropagation()
 
-                !this.popoverOpen && this.insertManagerMenu(passwordInput)  
+                this.currentPasswordInput = passwordInput
+
+                !this.popoverOpen && this.insertManagerMenu()  
             }
         })
     }
     
-    insertManagerMenu(passwordInput: HTMLInputElement) {
+    insertManagerMenu() {
         bootstrap.use({target: this.popoverShadow})
         mainStyle.use({target: this.popoverShadow})
 
         const managerPopover = document.createElement('manager-popover') as IManagerPopoverComponent
 
-        managerPopover.connectPasswordInput(passwordInput)
+        managerPopover.connectPasswordInput(this.currentPasswordInput)
  
         this.popoverShadow.appendChild(managerPopover);
 
@@ -54,18 +58,18 @@ class Manager {
 
         document.body.appendChild(this.popoverHost)
 
-        this.applyPopoverPosition(passwordInput)
+        this.applyPopoverPosition()
 
         this.windowResizeEvent = event => {
-            this.applyPopoverPosition(passwordInput)
+            this.applyPopoverPosition()
         }
 
         window.onresize = this.windowResizeEvent
     }
 
-    applyPopoverPosition(input: HTMLInputElement) {
-        const inputPosition = this.getInputPosition(input)
-        const inputWidth = input.offsetWidth
+    applyPopoverPosition() {
+        const inputPosition = this.getInputPosition()
+        const inputWidth = this.currentPasswordInput.offsetWidth
 
         this.currentManagerPopover = this.popoverShadow.querySelector('manager-popover') as HTMLElement
 
@@ -78,11 +82,11 @@ class Manager {
         if(popoverXAxisOverflow)
             popoverLeftPosition -= Math.abs(popoverRightPosition - window.innerWidth) + popoverXAxisPositionGap
 
-        this.currentManagerPopover.style.transform = `translate3d(${popoverLeftPosition}px, ${inputPosition.top + input.offsetHeight}px, 0px)`
+        this.currentManagerPopover.style.transform = `translate3d(${popoverLeftPosition}px, ${inputPosition.top + this.currentPasswordInput.offsetHeight}px, 0px)`
     }
 
-    getInputPosition(input: HTMLInputElement) {
-        const rect = input.getBoundingClientRect()
+    getInputPosition() {
+        const rect = this.currentPasswordInput.getBoundingClientRect()
 
         return {
           left: rect.left,
@@ -93,8 +97,10 @@ class Manager {
 
     removeManagerMenu(event: MouseEvent) {
         const isPopoverHostEl = (event.target as HTMLElement).id == 'popover-host'
+
+        const targetIsTheCurrentPasswordInput = (event.target as HTMLElement).isEqualNode(this.currentPasswordInput)
         
-        if(this.popoverOpen && !isPopoverHostEl) {
+        if(this.popoverOpen && !isPopoverHostEl && !targetIsTheCurrentPasswordInput) {
             this.currentManagerPopover.remove()
             this.popoverHost.remove()
     
