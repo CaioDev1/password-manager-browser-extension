@@ -15,8 +15,8 @@ const CONFIG = {
    output: {
       path: path.join(__dirname, "dist"),
       filename: "[name].js",
-      publicPath: '',
-      assetModuleFilename: 'assets/img/[name][ext]',
+      /* publicPath: '',
+      assetModuleFilename: 'assets/img/[name][ext]', */
       clean: true
    },
    resolve: {
@@ -49,7 +49,7 @@ const CONFIG = {
                   options: {
                      injectType: 'lazyStyleTag',
                      insert: (element, options) => {
-                        var parent = options.target /* || document.head */
+                        var parent = options.target
 
                         parent.appendChild(element)
                       }
@@ -62,7 +62,7 @@ const CONFIG = {
          },
          {
             test: /\.(jpe?g|png|gif|svg|jpg)$/,
-            type: 'asset/resource',
+            type: 'asset/inline',
           }
       ],
    },
@@ -70,7 +70,6 @@ const CONFIG = {
       new CopyPlugin({
          patterns: [
             {from: path.resolve(__dirname, 'public', 'manifest.json'), to: '.'},
-            // {from: path.resolve(__dirname, 'public', 'assets'), to: "./assets"},
          ]
       }),
       new RunChromeExtension({ //? CHROME AUTOREFRESH PLUGIN
