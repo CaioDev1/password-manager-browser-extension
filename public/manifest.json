@@ -4,7 +4,7 @@
     "version": "1.0",
     "author": "CaioDev1",
     "manifest_version": 3,
-    "permissions": ["activeTab", "declarativeContent"],
+    "permissions": ["activeTab", "declarativeContent", "storage", "tabs"],
     "background": {
         "service_worker": "background.js"
     },
