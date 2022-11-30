@@ -6,10 +6,6 @@ import html from './password-popover.html'
 
 type TabIds = 'my_passwords_tab' | 'creation_tab'
 
-//! TO FIX
-//? On tab changes, the creation tab removes all listeners and label values
-    //* Implement a template render to pass all component value on tab show?
-
 export const ManagerPopoverComponent = ({root}: IComponentDependencies) => {
     class ManagerPopover extends HTMLElement {
         private currentTabId: TabIds = 'creation_tab'
@@ -31,6 +27,7 @@ export const ManagerPopoverComponent = ({root}: IComponentDependencies) => {
 
         private get creationTab() {return (this.querySelector('#creation-template') as HTMLTemplateElement).content}
         private get myPasswordsTab() {return (this.querySelector('#my-passwords-template') as HTMLTemplateElement).content}
+        private get myPasswordButton() {return (this.myPasswordsTab.querySelector('#my-password-button-template') as HTMLTemplateElement).content}
        
         private get generatePasswordButton() {return this.querySelector('#generate-password-button') as HTMLButtonElement}
 
@@ -60,6 +57,8 @@ export const ManagerPopoverComponent = ({root}: IComponentDependencies) => {
             this.initPasswordConfigOptionListeners()
 
             this.refreshCreationForm()
+
+            this.loadPasswords()
             
             this.dispatchEvent(this.componentConnectedEvent)
         }
@@ -189,7 +188,9 @@ export const ManagerPopoverComponent = ({root}: IComponentDependencies) => {
 
                             this.refreshCreationForm()
                         } else {
-                            tabContent?.appendChild(this.myPasswordsTab.cloneNode(true))
+                            this.loadPasswords().then(() => {
+                                tabContent?.appendChild(this.myPasswordsTab.cloneNode(true))
+                            })
                         }        
 
                         this.currentTabId = tabId
@@ -258,7 +259,44 @@ export const ManagerPopoverComponent = ({root}: IComponentDependencies) => {
 
             })
         }
+        
+        private async loadPasswords() {
+            try {
+                const {passwords} = await PasswordStorageService.getLogins()
+
+                const container = this.myPasswordsTab.querySelector('#my-passwords-container')
+
+                if(container && typeof passwords == 'object') {
+                    container.innerHTML = ''
+
+                    Object.entries(passwords).forEach(([domain, password]) => {
+                        const newButtonTemplate = this.myPasswordButton.cloneNode(true) as HTMLButtonElement
+
+                        if(newButtonTemplate) {
+                            (newButtonTemplate.querySelector('.card-title') as HTMLElement).textContent = domain;
+
+                            const passwordLengthPreview = password.split('').map(() => '*').join('');
+
+                            (newButtonTemplate.querySelector('.card-password-preview') as HTMLElement).textContent = passwordLengthPreview
+                        }
+
+                        container.appendChild(newButtonTemplate)
+
+                        this.initMyPasswordButtonEvents(newButtonTemplate, password);
+                    })
+                }
+            } catch (error) {
+                
+            }
+        }
+
+        initMyPasswordButtonEvents(button: HTMLButtonElement, password: string) {
+            button.addEventListener('click', e => {
+                this.passwordInput.value = password
+            })
+        }
     }
+
 
     return {
         component: ManagerPopover,
