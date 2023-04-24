@@ -2,7 +2,7 @@ chrome.runtime.onInstalled.addListener(event => {
     console.log('Loaded extension')
     
     //! REMOVED UNTIL REFACTOR THE EXTENSION MESSAGING LOGIC
-    /* chrome.runtime.onMessage.addListener((eventData: {type: string, data: {domain: string, password: string}}, params, sendResponse) => {
+    chrome.runtime.onMessage.addListener((eventData: {type: string, data: {domain: string, password: string}}, params, sendResponse) => {
         if(eventData.type == 'store-password') {
             chrome.storage.sync.get('passwords', data => {
                 const storage = data as {passwords: {[domain: string]: string}}
@@ -25,6 +25,6 @@ chrome.runtime.onInstalled.addListener(event => {
             })
         }
 
-        return true
-    }) */
+        return false
+    })
 })

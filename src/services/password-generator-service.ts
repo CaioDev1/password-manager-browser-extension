@@ -9,6 +9,7 @@ export interface IPasswordGeneratorParams {
     numbers: {value: boolean, disabled: boolean}
     symbols: {value: boolean, disabled: boolean}
 }
+
 export default class PasswordGeneratorService {
     generatePassword(params: IPasswordGeneratorParams) {
         return passwordGenerator.generate({

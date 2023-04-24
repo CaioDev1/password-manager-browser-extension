@@ -4,7 +4,7 @@ export default class PasswordStorageService {
     static storePassword(newPassword: string) {
         //! REMOVED UNTIL REFACTOR THE EXTENSION MESSAGING LOGIC
         return new Promise<void>((resolve, reject) => {
-            /* chrome.runtime.sendMessage({
+            chrome.runtime.sendMessage({
                 type: 'store-password',
                 data: {
                     domain: window.location.host,
@@ -14,7 +14,7 @@ export default class PasswordStorageService {
             }, (response: {success: boolean}) => {
                 if(chrome.runtime.lastError) reject(chrome.runtime.lastError)
                 else resolve()
-            }) */
+            })
 
             chrome.storage.sync.get('passwords', data => {
                 const storage = data as {passwords: {[domain: string]: string}}

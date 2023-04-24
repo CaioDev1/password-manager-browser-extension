@@ -24,11 +24,14 @@ export const ManagerPopoverComponent = ({root}: IComponentDependencies) => {
         private currentPassword: string
 
         private componentConnectedEvent: Event = new Event('componentConnected')
+        private passwordInputUndoBlurEventFn: (e: Event) => void
 
         private get creationTab() {return (this.querySelector('#creation-template') as HTMLTemplateElement).content}
         private get myPasswordsTab() {return (this.querySelector('#my-passwords-template') as HTMLTemplateElement).content}
         private get myPasswordButton() {return (this.myPasswordsTab.querySelector('#my-password-button-template') as HTMLTemplateElement).content}
-       
+        private get emptyListTemplate() {return (this.myPasswordsTab.querySelector('#empty-list-title-template') as HTMLTemplateElement).content}
+        private get emptyListTitle() {return (this.emptyListTemplate.querySelector('.empty-list-title') as HTMLTitleElement)}
+
         private get generatePasswordButton() {return this.querySelector('#generate-password-button') as HTMLButtonElement}
 
         private get passwordResultLabel() {return this.querySelector('#password-result') as HTMLLabelElement}
@@ -69,12 +72,18 @@ export const ManagerPopoverComponent = ({root}: IComponentDependencies) => {
             this.addEventListener('componentConnected', () => {
                 if(this.passwordInput instanceof HTMLInputElement) {
                     this.disableGeneratePasswordButton(false)
+
+                    this.passwordInputUndoBlurEventFn = e => (e.target as HTMLInputElement).focus()
+
+                    this.passwordInput.addEventListener('blur', this.passwordInputUndoBlurEventFn)
                 }
             })
         }
 
         disconnectedCallback() {
             managerPopoverStyle.unuse({target: this})
+
+            this.passwordInput.removeEventListener('blur', this.passwordInputUndoBlurEventFn)
         }
 
         private disableGeneratePasswordButton(disabled: boolean) {  
@@ -176,7 +185,7 @@ export const ManagerPopoverComponent = ({root}: IComponentDependencies) => {
 
             this.querySelectorAll<HTMLButtonElement>('.tab-button')
                 .forEach(button => {
-                    button.addEventListener('click', e => {                        
+                    button.addEventListener('click', e => {      
                         const tabId: TabIds = button.dataset.tabid as TabIds
 
                         tabContent.innerHTML = ''
@@ -269,21 +278,27 @@ export const ManagerPopoverComponent = ({root}: IComponentDependencies) => {
                 if(container && typeof passwords == 'object') {
                     container.innerHTML = ''
 
-                    Object.entries(passwords).forEach(([domain, password]) => {
-                        const newButtonTemplate = this.myPasswordButton.cloneNode(true) as HTMLButtonElement
+                    const buttonTemplate = this.myPasswordButton.querySelector('button') as HTMLButtonElement
 
-                        if(newButtonTemplate) {
+                    if(buttonTemplate) {
+                        Object.entries(passwords).forEach(([domain, password]) => {
+                            const newButtonTemplate = buttonTemplate.cloneNode(true) as HTMLButtonElement;
+
                             (newButtonTemplate.querySelector('.card-title') as HTMLElement).textContent = domain;
 
                             const passwordLengthPreview = password.split('').map(() => '*').join('');
 
                             (newButtonTemplate.querySelector('.card-password-preview') as HTMLElement).textContent = passwordLengthPreview
-                        }
+                        
+                            container.appendChild(newButtonTemplate)
+                            
+                            this.initMyPasswordButtonEvents(newButtonTemplate, password);
+                        })
+                    }
+                } else if(container) {
+                    container.innerHTML = ''
 
-                        container.appendChild(newButtonTemplate)
-
-                        this.initMyPasswordButtonEvents(newButtonTemplate, password);
-                    })
+                    container.appendChild(this.emptyListTitle)
                 }
             } catch (error) {
                 
@@ -291,9 +306,10 @@ export const ManagerPopoverComponent = ({root}: IComponentDependencies) => {
         }
 
         initMyPasswordButtonEvents(button: HTMLButtonElement, password: string) {
-            button.addEventListener('click', e => {
+            button.onclick = e => {
+                debugger
                 this.passwordInput.value = password
-            })
+            }
         }
     }
 
